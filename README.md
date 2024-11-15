@@ -6,7 +6,7 @@
 | `<2 /logs/test.txt END>` | Liest den Inhalt der angegebenen Datei (`/logs/test.txt`) und gibt ihn auf den seriellen Monitor aus.                                 |
 | `<3 config END>`         | Liest den Inhalt der Konfigurationsdatei und gibt ihn auf den seriellen Monitor aus.                                                  |
 | `<4 /logs/test.txt END>` | Löscht die angegebene Datei (`/logs/test.txt`) auf der SD-Karte.                                                                      |
-| `<5 config.cfg END>`     | Schreibt in die angegebene Datei (`config.cfg`). Der Inhalt, der geschrieben werden soll, wird durch den zweiten Parameter übergeben. |
+| `<5 config.cfg [fileContent] END>`     | Schreibt in die angegebene Datei (`config.cfg`). Der Inhalt, der geschrieben werden soll, wird durch den zweiten Parameter übergeben. |
 
 ## Anmerkungen:
 

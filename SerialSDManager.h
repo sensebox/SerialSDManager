@@ -18,7 +18,7 @@ private:
     SdFile root;
     SdFile file;
 
-    static const byte numChars = 50;
+    static const byte numChars = 400;
     char receivedChars[numChars];
     char tempChars[numChars];
 

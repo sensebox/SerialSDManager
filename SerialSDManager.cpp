@@ -80,6 +80,8 @@ void SerialSDManager::parseData() {
 }
 
 void SerialSDManager::executeCommand() {
+    char *configFilename = findConfigFile();
+
     switch(cmdId) {
         case 1:
             printRoot();
@@ -88,7 +90,6 @@ void SerialSDManager::executeCommand() {
             printFileContent(cmdMsg);
             break;
         case 3: {
-            char *configFilename = findConfigFile();
             printFileContent(configFilename);
             break;
         }
@@ -96,6 +97,11 @@ void SerialSDManager::executeCommand() {
             deleteFile(cmdMsg);
             break;
         case 5:
+            if (strcmp(configFilename, "No config file found") != 0 && strcmp(configFilename, "Error opening root folder") != 0) {
+                deleteFile(configFilename);
+            } else {
+                Serial.println("No config file to delete.");
+            }
             writeFile("config.cfg", cmdMsg);
             break;
         default:
@@ -195,8 +201,6 @@ char* SerialSDManager::findConfigFile() {
             name.toLowerCase();
             if (name.indexOf(".cfg") != -1) {
                 name.toCharArray(buffer, sizeof(buffer));
-                Serial.print("Found ");
-                Serial.println(buffer);
                 file.close();
                 root.close();
                 return buffer;

@@ -23,6 +23,7 @@ private:
     char tempChars[numChars];
 
     char cmdMsg[numChars] = {0};
+    char cmdFileName[50] = {0};
     int cmdId = 0;
     boolean newData = false;
 
@@ -33,6 +34,7 @@ private:
 void printRoot();
 void printFileContent(const char* filename);
 void deleteFile(const char* fileName);
+void deleteAllCfgExcept(const char* keepFile);
 void writeFile(const char* fileName, const char* fileContent);
 char* findConfigFile();
 SdFile getParentDir(const char* filepath, int* index);

@@ -73,9 +73,24 @@ void SerialSDManager::recvWithStartEndMarkers() {
 void SerialSDManager::parseData() {
     char *strtokIndx = strtok(tempChars, " ");
     cmdId = atoi(strtokIndx);
-    strtokIndx = strtok(NULL, " ");
-    if (strtokIndx != nullptr) {
-        strcpy(cmdMsg, strtokIndx);
+    
+    // For command 5: first token is filename, rest is content
+    if (cmdId == 5) {
+        strtokIndx = strtok(NULL, " ");
+        if (strtokIndx != nullptr) {
+            strcpy(cmdFileName, strtokIndx);
+        }
+        // Get the rest as content (everything after filename)
+        strtokIndx = strtok(NULL, "");  // Empty delimiter = rest of string
+        if (strtokIndx != nullptr) {
+            strcpy(cmdMsg, strtokIndx);
+        }
+    } else {
+        // For other commands: everything after cmdId is cmdMsg
+        strtokIndx = strtok(NULL, "");
+        if (strtokIndx != nullptr) {
+            strcpy(cmdMsg, strtokIndx);
+        }
     }
 }
 
@@ -97,12 +112,13 @@ void SerialSDManager::executeCommand() {
             deleteFile(cmdMsg);
             break;
         case 5:
-            if (strcmp(configFilename, "No config file found") != 0 && strcmp(configFilename, "Error opening root folder") != 0) {
-                deleteFile(configFilename);
-            } else {
-                Serial.println("No config file to delete.");
-            }
+            // Generic file write: <5 filename content>
+            writeFile(cmdFileName, cmdMsg);
+            break;
+        case 7:
+            // Write config.cfg and delete all other .cfg files
             writeFile("config.cfg", cmdMsg);
+            deleteAllCfgExcept("config.cfg");
             break;
         default:
             Serial.println("Unknown command.");
@@ -165,6 +181,48 @@ void SerialSDManager::deleteFile(const char* fileName) {
         }
     } else {
         Serial.println("The file does not exist.");
+    }
+}
+
+void SerialSDManager::deleteAllCfgExcept(const char* keepFile) {
+    File root = SD.open("/");
+    if (!root) {
+        Serial.println("Error opening root directory.");
+        return;
+    }
+
+    // Collect filenames first (can't delete while iterating)
+    char filesToDelete[10][50];
+    int count = 0;
+
+    while (count < 10) {
+        File file = root.openNextFile();
+        if (!file) break;
+
+        if (!file.isDirectory()) {
+            String name = file.name();
+            String lowerName = name;
+            lowerName.toLowerCase();
+            if (lowerName.indexOf(".cfg") != -1) {
+                // Check if this is the file to keep (case-insensitive)
+                String keepLower = keepFile;
+                keepLower.toLowerCase();
+                if (lowerName != keepLower) {
+                    name.toCharArray(filesToDelete[count], 50);
+                    count++;
+                }
+            }
+        }
+        file.close();
+    }
+    root.close();
+
+    // Now delete collected files
+    for (int i = 0; i < count; i++) {
+        if (SD.remove(filesToDelete[i])) {
+            Serial.print("Deleted old config: ");
+            Serial.println(filesToDelete[i]);
+        }
     }
 }
 
